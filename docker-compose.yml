@@ -1,0 +1,93 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: lab-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      bootstrap.memory_lock: "true"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - backend
+    expose:
+      - "9200"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: lab-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      SERVER_HOST: "0.0.0.0"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "127.0.0.1:5601:5601"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5601/api/status >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  suricata:
+    image: jasonish/suricata:7.0.10
+    container_name: lab-suricata
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./rules:/var/lib/suricata/rules:ro
+      - ./logs:/var/log/suricata
+    command: -i eth0 -c /etc/suricata/suricata.yaml
+    networks:
+      - sensor
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  victim-ubuntu:
+    image: ubuntu:22.04
+    container_name: lab-victim-ubuntu
+    command: sleep infinity
+    networks:
+      - lab-net
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  es_data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
+  sensor:
+    driver: bridge
+  lab-net:
+    driver: bridge
