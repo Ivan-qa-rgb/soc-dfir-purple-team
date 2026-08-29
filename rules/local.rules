@@ -1,0 +1,10 @@
+alert dns any any -> any any (msg:"SURICATA DGA High Entropy Domain"; dns.query; pcre:"/^[a-z0-9]{20,40}\.[a-z]{2,6}$/i"; classtype:trojan-activity; sid:1000001; rev:1;)
+alert http any any -> any any (msg:"SURICATA Suspicious User-Agent"; http.user_agent; content:"Mozilla/4.0"; classtype:trojan-activity; sid:1000002; rev:1;)
+alert dns any any -> any any (msg:"SURICATA DNS Tunneling Large TXT"; dns.query; content:"|00 10|"; offset:0; depth:2; classtype:trojan-activity; sid:1000003; rev:1;)
+
+Что это делает
+Первое правило ищет DGA-подобные домены по шаблону.
+
+Второе правило ловит подозрительный User-Agent.
+
+Третье правило помогает заметить DNS-туннелирование через TXT-запросы.
