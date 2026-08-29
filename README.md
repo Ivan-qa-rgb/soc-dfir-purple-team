@@ -1,4 +1,4 @@
-# SOC / DFIR Purple Team 
+# SOC / DFIR Purple Team
 
 Production-like лаборатория для практики SOC, IR и DFIR на Docker Compose с Suricata, Elasticsearch и Kibana.
 
