@@ -15,3 +15,12 @@ outputs:
         - http
         - tls
         - files
+
+Что это даёт
+default-rule-path указывает, где лежат правила.
+
+rule-files подключает local.rules.
+
+eve-log включает JSON-вывод.
+
+eve.json будет содержать алерты, DNS, HTTP, TLS и файловые события.
