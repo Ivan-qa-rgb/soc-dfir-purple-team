@@ -1,0 +1,17 @@
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - local.rules
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert:
+            payload: yes
+            payload-printable: yes
+        - dns
+        - http
+        - tls
+        - files
